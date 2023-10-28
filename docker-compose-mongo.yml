@@ -1,0 +1,35 @@
+version: "3"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    volumes:
+      - /vagrant/webapp/database:/app/database
+    depends_on:
+      - database
+    environment:
+      MONGO_URL: mongodb://database:27017/webapp_db
+
+  database:
+    image: mongo:4.4.6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - app
+    environment:
+      API_URL: http://app:3000
+    command: ["yarn", "test", "test.spec.js"]
+
+volumes:
+  mongo_data:
